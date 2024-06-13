@@ -184,6 +184,26 @@ ball.applyMatrix4(translation(0, -GOAL_POST_LENGTH * 0.25, 0.75));
 scene.add(ball);
 
 // TODO: Bezier Curves
+const start = new THREE.Vector3(0, 0, 100);
+const end = new THREE.Vector3(0, 0.5, -1);
+const midRight = new THREE.Vector3(50, 0, 50);  // Right Winger Route
+const midCenter = new THREE.Vector3(0, 50, 50);  // Center Forward Route
+const midLeft = new THREE.Vector3(-50, 0, 50);  // Left Winger Route
+
+const curves = [
+    new THREE.QuadraticBezierCurve3(start, midRight, end),
+    new THREE.QuadraticBezierCurve3(start, midCenter, end),
+    new THREE.QuadraticBezierCurve3(start, midLeft, end)
+];
+
+// Visualizing each curve
+curves.forEach(curve => {
+    const points = curve.getPoints(50);  // Sample points along the curve
+    const geometry = new THREE.BufferGeometry().setFromPoints(points);
+    const material = new THREE.LineBasicMaterial({ color: 0xff0000 });  // Red for visibility
+    const curveObject = new THREE.Line(geometry, material);
+    scene.add(curveObject);  // Adding the curve to the scene
+});
 
 
 // TODO: Camera Settings
@@ -223,3 +243,41 @@ function animate() {
 
 }
 animate()
+
+// Rotation matrix about the x,y,z axes.
+function rotate(theta, axis) {
+	let m = new THREE.Matrix4();
+	theta = degrees_to_radians(theta)
+
+	if(axis == 'x'){
+		m.set(1, 0, 0, 0,
+			0, Math.cos(theta), -Math.sin(theta), 0,
+			0, Math.sin(theta), Math.cos(theta), 0,
+			0, 0, 0, 1);
+	}
+	else if(axis == 'y'){
+		m.set(Math.cos(theta), 0, Math.sin(theta), 0, 
+		0, 1, 0, 0,
+		-Math.sin(theta), 0, Math.cos(theta), 0, 
+		0, 0, 0, 1);
+	}
+	else if(axis == 'z'){
+		m.set(Math.cos(theta), -Math.sin(theta), 0, 0,
+		Math.sin(theta), Math.cos(theta), 0, 0, 
+		0, 0, 1, 0, 
+		0, 0, 0, 1);
+	}
+
+	return m;
+}
+
+
+// General translation matrix.
+function translation(x, y, z) {
+    let m = new THREE.Matrix4();
+    m.set(1, 0, 0, x, 
+		  0, 1, 0, y,
+          0, 0, 1, z,
+          0, 0, 0, 1);
+    return m
+}
