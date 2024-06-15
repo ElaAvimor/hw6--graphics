@@ -33,13 +33,13 @@ const texture = loader.load([
 scene.background = texture;
 
 
-// TODO: Texture Loading
+// done Texture Loading
 // We usually do the texture loading before we start everything else, as it might take processing time
 const textureLoader = new THREE.TextureLoader();
 const ballTexture = textureLoader.load('hw6/src/textures/soccer_ball.jpg');
 
 
-// TODO: Add Lighting
+// done: Add Lighting
 let directionalLightStart = new THREE.DirectionalLight(0xffffff, 1);
 scene.add(directionalLightStart);
 
@@ -51,7 +51,7 @@ let ambientLight = new THREE.AmbientLight(0x404040);
 scene.add(ambientLight);
 
 
-// TODO: Goal
+// done: Goal
 // You should copy-paste the goal from the previous exercise here
 // Geometry constants.
 const SKELETON_RADIUS = 0.05;
@@ -175,7 +175,7 @@ backRightTorus.applyMatrix4(translation(0, -GOAL_POST_LENGTH / 2, zTorus));
 rightGoalPost.add(backRightTorus);
 
 
-// TODO: Ball
+// done: Ball
 // You should add the ball with the soccer.jpg texture here
 // Ball
 const ballGeometry = new THREE.SphereGeometry(GOAL_POST_LENGTH / 16, 32, 16);
@@ -183,7 +183,7 @@ const ball = new THREE.Mesh(ballGeometry, ballMaterial);
 ball.applyMatrix4(translation(0, -GOAL_POST_LENGTH * 0.25, 0.75));
 scene.add(ball);
 
-// TODO: Bezier Curves
+// done: Bezier Curves
 const start = new THREE.Vector3(0, 0, 100);
 const end = new THREE.Vector3(0, 0.5, -1);
 const midRight = new THREE.Vector3(50, 0, 50);  // Right Winger Route
@@ -211,9 +211,13 @@ curves.forEach(curve => {
 
 
 // TODO: Add collectible cards with textures
+const yellowCardTexture = textureLoader.load('src/textures/yellow_card.jpg');
+const redCardTexture = textureLoader.load('src/textures/red_card.jpg');
 
+const yellowCardMaterial = new THREE.MeshPhongMaterial({ map: yellowCardTexture, side: THREE.DoubleSide });
+const redCardMaterial = new THREE.MeshPhongMaterial({ map: redCardTexture, side: THREE.DoubleSide });
 
-
+const cardGeometry = new THREE.PlaneGeometry(0.60, 1);
 
 
 // TODO: Add keyboard event
