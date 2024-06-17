@@ -38,7 +38,6 @@ scene.background = texture;
 const textureLoader = new THREE.TextureLoader();
 const ballTexture = textureLoader.load('hw6/src/textures/soccer_ball.jpg');
 
-
 // done: Add Lighting
 let directionalLightStart = new THREE.DirectionalLight(0xffffff, 1);
 scene.add(directionalLightStart);
@@ -60,8 +59,8 @@ const GOAL_POST_LENGTH = CROSSBAR_LENGTH / 3;
 const POSTS_ANGLE = 35;
 
 // Materials
-const goalMaterial = new THREE.MeshPhongMaterial({color: "white", wireframe: isWireFrameEnabled});
-const netMaterial = new THREE.MeshBasicMaterial({color: 0x888888, side: THREE.DoubleSide, wireframe: isWireFrameEnabled});
+const goalMaterial = new THREE.MeshPhongMaterial({color: "white"});
+const netMaterial = new THREE.MeshBasicMaterial({color: 0x888888, side: THREE.DoubleSide});
 const ballMaterial = new THREE.MeshPhongMaterial({ map: ballTexture });
 
 
@@ -190,35 +189,60 @@ const midRight = new THREE.Vector3(50, 0, 50);  // Right Winger Route
 const midCenter = new THREE.Vector3(0, 50, 50);  // Center Forward Route
 const midLeft = new THREE.Vector3(-50, 0, 50);  // Left Winger Route
 
-const curves = [
-    new THREE.QuadraticBezierCurve3(start, midRight, end),
-    new THREE.QuadraticBezierCurve3(start, midCenter, end),
-    new THREE.QuadraticBezierCurve3(start, midLeft, end)
-];
+const curves = {
+    middleCurve: addCurve(start, midCenter, end),
+    rightCurve: addCurve(start, midRight, end),
+    leftCurve: addCurve(start, midLeft, end)
+}
 
-// Visualizing each curve
-curves.forEach(curve => {
-    const points = curve.getPoints(50);  // Sample points along the curve
-    const geometry = new THREE.BufferGeometry().setFromPoints(points);
-    const material = new THREE.LineBasicMaterial({ color: 0xff0000 });  // Red for visibility
-    const curveObject = new THREE.Line(geometry, material);
-    scene.add(curveObject);  // Adding the curve to the scene
-});
+const curveGeometry = []
+curveGeometry.push(new THREE.QuadraticBezierCurve3(start, midLeft, end));
+curveGeometry.push(new THREE.QuadraticBezierCurve3(start, midCenter, end));
+curveGeometry.push(new THREE.QuadraticBezierCurve3(start, midRight, end));
 
+scene.add(curves.middleCurve);
+scene.add(curves.rightCurve);
+scene.add(curves.leftCurve);
+
+let currentCurve = 1;
 
 // TODO: Camera Settings
 // Set the camera following the ball here
 
 
 // TODO: Add collectible cards with textures
-const yellowCardTexture = textureLoader.load('src/textures/yellow_card.jpg');
-const redCardTexture = textureLoader.load('src/textures/red_card.jpg');
+const yellowCardTexture = textureLoader.load('/src/textures/yellow_card.jpg');
+const redCardTexture = textureLoader.load('/src/textures/red_card.jpg');
+
+const cardGeometry = new THREE.PlaneGeometry(0.65, 1);
 
 const yellowCardMaterial = new THREE.MeshPhongMaterial({ map: yellowCardTexture, side: THREE.DoubleSide });
 const redCardMaterial = new THREE.MeshPhongMaterial({ map: redCardTexture, side: THREE.DoubleSide });
 
-const cardGeometry = new THREE.PlaneGeometry(0.60, 1);
+let yellowCards = createCards(cardGeometry, yellowCardMaterial, curveGeometry, scene);
+let redCards = createCards(cardGeometry, redCardMaterial, curveGeometry, scene);
 
+// Combine yellowCards and redCards into a single array
+let cards = [...yellowCards, ...redCards].sort((a, b) => b.position.z - a.position.z);
+
+function createCards(cardGeometry, cardMaterial, curvesGeo, scene) {
+    const cards = [];
+    for (let j = 0; j < 2; j++) {  // Assuming each card type is placed twice in the scene
+        for (let i = 0; i < curvesGeo.length; i++) {
+            const curve = curvesGeo[i];
+            const point = curve.getPoint(Math.random());
+            const cardMesh = new THREE.Mesh(cardGeometry, cardMaterial);
+            cardMesh.position.copy(point); // Set the card position to the current point on the curve
+            scene.add(cardMesh);
+            cardMesh.curveIndex = i;
+            cards.push(cardMesh); // Add the card mesh to the cards list
+        }
+    }
+    return cards;
+}
+
+let yellowHits = 0;
+let redHits = 0;
 
 // TODO: Add keyboard event
 // We wrote some of the function for you
@@ -284,4 +308,14 @@ function translation(x, y, z) {
           0, 0, 1, z,
           0, 0, 0, 1);
     return m
+}
+
+function addCurve(start, pos, end) {
+    const curve = new THREE.QuadraticBezierCurve3(start, pos, end);
+    const points = curve.getPoints(50);
+    const geometry = new THREE.BufferGeometry().setFromPoints(points);
+    const material = new THREE.LineBasicMaterial({ color: 0xff0000, transparent: true, opacity: 0 });
+    const curveObject = new THREE.Line(geometry, material);
+
+    return curveObject;
 }
