@@ -302,9 +302,35 @@ function animate() {
 
     ball.matrix.copy(ballMatrix);
     ball.matrix.decompose(ball.position, ball.quaternion, ball.scale);
-    	// TODO: Test for card-ball collision
 
-	
+    // TODO: Test for card-ball collision
+    if (cards.length > 0 && cards[0].position.z > ball.position.z) {
+        // allCards[0].visible = false;
+        if (cards[0].curveIndex == currentCurve) {
+            cards[0].visible = false;
+            if (cards[0].material === redCardMaterial) {
+                console.log("Red card");
+                redHits += 1;
+            } else if (cards[0].material === yellowCardMaterial) {
+                console.log("Yellow card");
+                yellowHits += 1;
+        }
+        allCards.shift();
+    }
+    if (ball.position.z < -0.5) {
+        const fairPlay = 100 * (Math.pow(2, -(yellowTouches + 10 * redTouches - 5 * varTouches) / 10));
+        alert('Your fair play score is ' + fairPlay);
+        yellowHits = 0;
+        redHits = 0;
+        animate1 = false;
+        resetCards();
+        currentCurve = 1;
+        inGame = false;
+        t = 0;
+        ball.applyMatrix4(translation(0, -0.5, 100.5));
+        
+        updateCameraPosition();
+    }
 	renderer.render( scene, camera );
     updateCameraPosition();
 
