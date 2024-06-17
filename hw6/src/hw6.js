@@ -59,9 +59,10 @@ const CROSSBAR_LENGTH = 3.0;
 const GOAL_POST_LENGTH = CROSSBAR_LENGTH / 3;
 const POSTS_ANGLE = 35;
 
+
 // Materials
-const goalMaterial = new THREE.MeshPhongMaterial({color: "white", wireframe: isWireFrameEnabled});
-const netMaterial = new THREE.MeshBasicMaterial({color: 0x888888, side: THREE.DoubleSide, wireframe: isWireFrameEnabled});
+const goalMaterial = new THREE.MeshPhongMaterial({color: "white"});
+const netMaterial = new THREE.MeshBasicMaterial({color: 0x888888, side: THREE.DoubleSide});
 const ballMaterial = new THREE.MeshPhongMaterial({ map: ballTexture });
 
 
@@ -208,6 +209,11 @@ curves.forEach(curve => {
 
 // TODO: Camera Settings
 // Set the camera following the ball here
+let offset = new THREE.Vector3(0, 3, 7);
+let cameraPosition = new THREE.Vector3().addVectors(ball.position, offset);
+let cameraMatrix = new THREE.Matrix4().makeTranslation(0, 4, cameraPosition.z);
+camera.matrix.copy(cameraMatrix);
+camera.matrix.decompose(camera.position, camera.quaternion, camera.scale);
 
 
 // TODO: Add collectible cards with textures
@@ -220,15 +226,27 @@ const redCardMaterial = new THREE.MeshPhongMaterial({ map: redCardTexture, side:
 const cardGeometry = new THREE.PlaneGeometry(0.60, 1);
 
 
-// TODO: Add keyboard event
-// We wrote some of the function for you
+// Initialize necessary variables
+let currentIncrement = 0; // Initial increment position on the curve
+const increments = 5000; // Total increments between start and end of the curve
+const curve = new THREE.Curve(); // Replace with your actual curve
+
+// Function to move the ball to a new position on the curve
+const moveBall = (increment) => {
+    const point = curve.getPoint(increment / increments); // Get the point on the curve
+    ball.style.transform = `translate(${point.x}px, ${point.y}px)`; // Move the ball to the new position
+};
+
+// Handle keyboard events
 const handle_keydown = (e) => {
-	if(e.code == 'ArrowLeft'){
-		// TODO
-	} else if (e.code == 'ArrowRight'){
-		// TODO
-	}
-}
+    if (e.code == 'ArrowLeft') {
+        currentIncrement = Math.max(currentIncrement - 1, 0); // Move left, ensure not less than 0
+    } else if (e.code == 'ArrowRight') {
+        currentIncrement = Math.min(currentIncrement + 1, increments); // Move right, ensure not more than total increments
+    }
+    moveBall(currentIncrement);
+};
+
 document.addEventListener('keydown', handle_keydown);
 
 
