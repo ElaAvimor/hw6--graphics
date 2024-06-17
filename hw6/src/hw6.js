@@ -319,10 +319,10 @@ function animate() {
     }
     if (ball.position.z < -0.5) {
         const fairPlay = 100 * (Math.pow(2, -(yellowHits + 10 * redHits) / 10));
+        resetCards();
         alert('Your fair play score is ' + fairPlay);
         yellowHits = 0;
         redHits = 0;
-        resetCards();
         currentCurve = 1;
         t = 0;
         ball.applyMatrix4(translation(0, -0.5, 100.5));
