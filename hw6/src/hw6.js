@@ -49,6 +49,9 @@ scene.add(directionalLightEnd);
 let ambientLight = new THREE.AmbientLight(0x404040);
 scene.add(ambientLight);
 
+let clock = new THREE.Clock();
+let duration = 10;
+
 
 // done: Goal
 // You should copy-paste the goal from the previous exercise here
@@ -280,15 +283,26 @@ const handle_keydown = (e) => {
 document.addEventListener('keydown', handle_keydown);
 
 
+let t = 0;
 
 function animate() {
 
 	requestAnimationFrame( animate );
 
 	// TODO: Animation for the ball's position
+    let elapsedTime = clock.getElapsedTime();
 
+    
+    // Calculate the current time along the curve (from 0 to 1)
+    t = elapsedTime / duration % 1;
 
-	// TODO: Test for card-ball collision
+    let point = curveGeometry[currentCurve].getPoint(t);
+
+    let ballMatrix = new THREE.Matrix4().makeTranslation(point.x, point.y, point.z);
+
+    ball.matrix.copy(ballMatrix);
+    ball.matrix.decompose(ball.position, ball.quaternion, ball.scale);
+    	// TODO: Test for card-ball collision
 
 	
 	renderer.render( scene, camera );
