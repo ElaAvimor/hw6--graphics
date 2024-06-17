@@ -255,19 +255,26 @@ const increments = 5000; // Total increments between start and end of the curve
 const curve = new THREE.Curve(); // Replace with your actual curve
 
 // Function to move the ball to a new position on the curve
-const moveBall = (increment) => {
-    const point = curve.getPoint(increment / increments); // Get the point on the curve
-    ball.style.transform = `translate(${point.x}px, ${point.y}px)`; // Move the ball to the new position
-};
+function moveBall(currentCurve) {
+    const ballPosition = curveGeometry[currentCurve].getPoint((100 - ball.position.z) / 100);
+    ball.applyMatrix4(translation(-ball.position.x, -ball.position.y, 0));
+    ball.applyMatrix4(translation(ballPosition.x, ballPosition.y, 0));
+}
 
 // Handle keyboard events
 const handle_keydown = (e) => {
     if (e.code == 'ArrowLeft') {
-        currentIncrement = Math.max(currentIncrement - 1, 0); // Move left, ensure not less than 0
-    } else if (e.code == 'ArrowRight') {
-        currentIncrement = Math.min(currentIncrement + 1, increments); // Move right, ensure not more than total increments
-    }
-    moveBall(currentIncrement);
+        currentCurve = (currentCurve + 1) % 3;
+        moveBall(currentCurve);
+        } else if (e.code == 'ArrowRight') {
+            currentCurve = (currentCurve - 1) % 3;
+            if (currentCurve < 0) {
+                currentCurve = 2;
+            }
+        }
+        moveBall(currentCurve);
+
+    
 };
 
 document.addEventListener('keydown', handle_keydown);
