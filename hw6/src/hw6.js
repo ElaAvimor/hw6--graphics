@@ -212,7 +212,7 @@ let currentCurve = 1;
 
 // TODO: Camera Settings
 // Set the camera following the ball here
-let offset = new THREE.Vector3(10, 1, 10);
+let offset = new THREE.Vector3(0, 3, 7);
 let cameraPosition = new THREE.Vector3().addVectors(ball.position, offset);
 let cameraMatrix = new THREE.Matrix4().makeTranslation(0, 4, cameraPosition.z);
 camera.matrix.copy(cameraMatrix);
@@ -266,10 +266,10 @@ function moveBall(currentCurve) {
 
 // Handle keyboard events
 const handle_keydown = (e) => {
-    if (e.code == 'ArrowLeft') {
+    if (e.code == 'ArrowRight') {
         currentCurve = (currentCurve + 1) % 3;
         moveBall(currentCurve);
-        } else if (e.code == 'ArrowRight') {
+        } else if (e.code == 'ArrowLeft') {
             currentCurve = (currentCurve - 1) % 3;
             if (currentCurve < 0) {
                 currentCurve = 2;
@@ -305,7 +305,6 @@ function animate() {
 
     // TODO: Test for card-ball collision
     if (cards.length > 0 && cards[0].position.z > ball.position.z) {
-        // allCards[0].visible = false;
         if (cards[0].curveIndex == currentCurve) {
             cards[0].visible = false;
             if (cards[0].material === redCardMaterial) {
@@ -314,32 +313,48 @@ function animate() {
             } else if (cards[0].material === yellowCardMaterial) {
                 console.log("Yellow card");
                 yellowHits += 1;
+            }
         }
-        allCards.shift();
+        cards.shift();
     }
     if (ball.position.z < -0.5) {
-        const fairPlay = 100 * (Math.pow(2, -(yellowTouches + 10 * redTouches - 5 * varTouches) / 10));
+        const fairPlay = 100 * (Math.pow(2, -(yellowHits + 10 * redHits) / 10));
         alert('Your fair play score is ' + fairPlay);
         yellowHits = 0;
         redHits = 0;
-        animate1 = false;
         resetCards();
         currentCurve = 1;
-        inGame = false;
         t = 0;
         ball.applyMatrix4(translation(0, -0.5, 100.5));
         
         updateCameraPosition();
     }
+
 	renderer.render( scene, camera );
     updateCameraPosition();
-
 }
+
 animate()
 
 function updateCameraPosition() {
     camera.position.copy(ball.position).add(offset);
     camera.lookAt(ball.position);
+}
+
+function resetCards() {
+    for (let i = 0; i < yellowCards.length; i++) {
+        yellowCards[i].visible = false;
+    }
+    for (let i = 0; i < redCards.length; i++) {
+        redCards[i].visible = false;
+    }
+    yellowCards = createCards(cardGeometry, yellowCardMaterial, curveGeometry, scene);
+    redCards = createCards(cardGeometry, redCardMaterial, curveGeometry, scene);
+    cards = [...yellowCards, ...redCards].sort((a, b) => b.position.z - a.position.z);
+
+    yellowHits = 0;
+    redHits = 0;
+    
 }
 // Rotation matrix about the x,y,z axes.
 function rotate(theta, axis) {
