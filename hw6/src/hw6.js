@@ -153,6 +153,70 @@ const leftNet = new THREE.Mesh(triangleGeometry, netMaterial);
 leftNet.applyMatrix4(rotate(-90, 'y'));
 leftNet.applyMatrix4(translation(-CROSSBAR_LENGTH / 2, 0, 0));
 nets.add(leftNet);
+const flagTexture = textureLoader.load('/src/textures/manchester-united-flag.jpg');
+
+const unitedlagMaterial = new THREE.MeshBasicMaterial({ map: flagTexture, side: THREE.DoubleSide });
+const unitedflagGeometry = new THREE.PlaneGeometry(4, 2); 
+
+const unitedFlag = new THREE.Mesh(unitedflagGeometry, unitedlagMaterial);
+
+// Position the flag on top of the goal
+unitedFlag.position.set(0, GOAL_POST_LENGTH / 2 + 2, 0);
+//flag.rotation.set(degrees_to_radians(90), 0, 0);
+
+// Add the flag to the goal
+skeleton.add(unitedFlag);
+
+// Flag Constants
+const FLAG_POST_HEIGHT = GOAL_POST_LENGTH * 1.2;  // Make the flag post taller than the goal post.
+const FLAG_POST_RADIUS = SKELETON_RADIUS;  // Same radius as the skeleton of the goal.
+const FLAG_WIDTH = CROSSBAR_LENGTH / 4;
+const FLAG_HEIGHT = GOAL_POST_LENGTH / 2;
+
+// Flag Materials
+const flagPostMaterial = new THREE.MeshPhongMaterial({ color: 'black', side: THREE.DoubleSide});
+const flagMaterial = new THREE.MeshPhongMaterial({ color: 'red', side: THREE.DoubleSide });
+
+// Flag Post Geometry
+const flagPostGeometry = new THREE.CylinderGeometry(FLAG_POST_RADIUS, FLAG_POST_RADIUS, FLAG_POST_HEIGHT, 32);
+
+// Flag Geometry
+const flagShape = new THREE.Shape();
+flagShape.moveTo(0, 0);
+flagShape.lineTo(FLAG_WIDTH, 0);
+flagShape.lineTo(FLAG_WIDTH / 2, FLAG_HEIGHT);
+flagShape.lineTo(0, 0);
+const flagGeometry = new THREE.ShapeGeometry(flagShape);
+
+// Creating flags
+function createFlag(xPosition) {
+    const flagPost = new THREE.Mesh(flagPostGeometry, flagPostMaterial);
+    // Set the bottom of the flag post to align with the bottom of the goal post
+    flagPost.position.set(xPosition, -GOAL_POST_LENGTH / 2, 0);
+
+    const flag = new THREE.Mesh(flagGeometry, flagMaterial);
+    // Position the triangle at the top of the post
+    flag.position.set(xPosition, GOAL_POST_LENGTH / 3.5 - FLAG_POST_HEIGHT + FLAG_HEIGHT / 2, 0);
+    flag.rotation.z = Math.PI / 2;  // Rotate to position perpendicular
+
+    // Orient the flag based on the side to point away from the goal
+    if (xPosition < 0) {
+        flag.rotation.y = Math.PI * 2;  // For the left flag, rotate to ensure it points outward to the left
+    } else {
+        flag.rotation.y =  - Math.PI;  // For the right flag, rotate to ensure it points outward to the right
+    }
+    // Add to the scene
+    skeleton.add(flagPost);
+    skeleton.add(flag);
+}
+// Add flags to both sides of the goal, slightly outside the crossbar ends
+const flagOffset = FLAG_WIDTH / 2 + FLAG_POST_RADIUS;  // Calculate the flag offset from the goal ends
+createFlag(-CROSSBAR_LENGTH / 2 - flagOffset);  // Left flag
+createFlag(CROSSBAR_LENGTH / 2 + flagOffset);  // Right flag
+
+
+
+
 
 // Adding the toruses
 const torusGeometry = new THREE.TorusGeometry(SKELETON_RADIUS * 1.25, SKELETON_RADIUS * 0.75, 32, 100);
