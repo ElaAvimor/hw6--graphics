@@ -306,10 +306,15 @@ function animate() {
 
 	
 	renderer.render( scene, camera );
+    updateCameraPosition();
 
 }
 animate()
 
+function updateCameraPosition() {
+    camera.position.copy(ball.position).add(offset);
+    camera.lookAt(ball.position);
+}
 // Rotation matrix about the x,y,z axes.
 function rotate(theta, axis) {
 	let m = new THREE.Matrix4();
