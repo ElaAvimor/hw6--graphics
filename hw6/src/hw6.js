@@ -60,8 +60,8 @@ const POSTS_ANGLE = 35;
 
 
 // Materials
-const goalMaterial = new THREE.MeshPhongMaterial({color: "white"});
-const netMaterial = new THREE.MeshBasicMaterial({color: 0x888888, side: THREE.DoubleSide});
+const goalMaterial = new THREE.MeshPhongMaterial({color: "0xffffff"});
+const netMaterial = new THREE.MeshBasicMaterial({color: 0x888888, side: THREE.DoubleSide, transparent: true, opacity: 0.5});
 const ballMaterial = new THREE.MeshPhongMaterial({ map: ballTexture });
 
 
@@ -180,7 +180,7 @@ rightGoalPost.add(backRightTorus);
 // Ball
 const ballGeometry = new THREE.SphereGeometry(GOAL_POST_LENGTH / 16, 32, 16);
 const ball = new THREE.Mesh(ballGeometry, ballMaterial);
-ball.applyMatrix4(translation(0, -GOAL_POST_LENGTH * 0.25, 0.75));
+ball.applyMatrix4(translation(0, 0, 100));
 scene.add(ball);
 
 // done: Bezier Curves
@@ -209,7 +209,7 @@ let currentCurve = 1;
 
 // TODO: Camera Settings
 // Set the camera following the ball here
-let offset = new THREE.Vector3(0, 3, 7);
+let offset = new THREE.Vector3(10, 1, 10);
 let cameraPosition = new THREE.Vector3().addVectors(ball.position, offset);
 let cameraMatrix = new THREE.Matrix4().makeTranslation(0, 4, cameraPosition.z);
 camera.matrix.copy(cameraMatrix);
@@ -217,31 +217,30 @@ camera.matrix.decompose(camera.position, camera.quaternion, camera.scale);
 
 
 // TODO: Add collectible cards with textures
-const yellowCardTexture = textureLoader.load('/src/textures/yellow_card.jpg');
-const redCardTexture = textureLoader.load('/src/textures/red_card.jpg');
-
 const cardGeometry = new THREE.PlaneGeometry(0.65, 1);
 
+const yellowCardTexture = textureLoader.load('/src/textures/yellow_card.jpg');
 const yellowCardMaterial = new THREE.MeshPhongMaterial({ map: yellowCardTexture, side: THREE.DoubleSide });
-const redCardMaterial = new THREE.MeshPhongMaterial({ map: redCardTexture, side: THREE.DoubleSide });
-
 let yellowCards = createCards(cardGeometry, yellowCardMaterial, curveGeometry, scene);
+
+const redCardTexture = textureLoader.load('/src/textures/red_card.jpg');
+const redCardMaterial = new THREE.MeshPhongMaterial({ map: redCardTexture, side: THREE.DoubleSide });
 let redCards = createCards(cardGeometry, redCardMaterial, curveGeometry, scene);
 
 // Combine yellowCards and redCards into a single array
 let cards = [...yellowCards, ...redCards].sort((a, b) => b.position.z - a.position.z);
 
-function createCards(cardGeometry, cardMaterial, curvesGeo, scene) {
+function createCards(cardGeometry, cardMaterial, curveGeometry, scene) {
     const cards = [];
-    for (let j = 0; j < 2; j++) {  // Assuming each card type is placed twice in the scene
-        for (let i = 0; i < curvesGeo.length; i++) {
-            const curve = curvesGeo[i];
+    for (let j = 0; j < 3; j++) {  
+        for (let i = 0; i < curveGeometry.length; i++) {
+            const curve = curveGeometry[i];
             const point = curve.getPoint(Math.random());
             const cardMesh = new THREE.Mesh(cardGeometry, cardMaterial);
-            cardMesh.position.copy(point); // Set the card position to the current point on the curve
+            cardMesh.position.copy(point); 
             scene.add(cardMesh);
             cardMesh.curveIndex = i;
-            cards.push(cardMesh); // Add the card mesh to the cards list
+            cards.push(cardMesh); 
         }
     }
     return cards;
