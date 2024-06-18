@@ -2,8 +2,8 @@
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
 // This defines the initial distance of the camera, you may ignore this as the camera is expected to be dynamic
-camera.applyMatrix4(new THREE.Matrix4().makeTranslation(-5, 3, 110));
-camera.lookAt(0, -4, 1)
+camera.applyMatrix4(new THREE.Matrix4().makeTranslation(0, 4, 107));
+camera.lookAt(0, 0, 0);
 
 
 const renderer = new THREE.WebGLRenderer();
@@ -36,7 +36,7 @@ scene.background = texture;
 // done Texture Loading
 // We usually do the texture loading before we start everything else, as it might take processing time
 const textureLoader = new THREE.TextureLoader();
-const ballTexture = textureLoader.load('hw6/src/textures/soccer_ball.jpg');
+const ballTexture = textureLoader.load('src/textures/soccer_ball.jpg');
 
 // done: Add Lighting
 let directionalLightStart = new THREE.DirectionalLight(0xffffff, 1);
@@ -156,12 +156,12 @@ nets.add(leftNet);
 const flagTexture = textureLoader.load('/src/textures/manchester-united-flag.jpg');
 
 const unitedlagMaterial = new THREE.MeshBasicMaterial({ map: flagTexture, side: THREE.DoubleSide });
-const unitedflagGeometry = new THREE.PlaneGeometry(4, 2); 
+const unitedflagGeometry = new THREE.PlaneGeometry(16, 8); 
 
 const unitedFlag = new THREE.Mesh(unitedflagGeometry, unitedlagMaterial);
 
 // Position the flag on top of the goal
-unitedFlag.position.set(0, GOAL_POST_LENGTH / 2 + 2, 0);
+unitedFlag.position.set(0, GOAL_POST_LENGTH / 2 + 8, 0);
 //flag.rotation.set(degrees_to_radians(90), 0, 0);
 
 // Add the flag to the goal
@@ -245,7 +245,7 @@ rightGoalPost.add(backRightTorus);
 // done: Ball
 // You should add the ball with the soccer.jpg texture here
 // Ball
-const ballGeometry = new THREE.SphereGeometry(GOAL_POST_LENGTH / 16, 32, 16);
+const ballGeometry = new THREE.SphereGeometry(GOAL_POST_LENGTH / 4, 132, 64);
 const ball = new THREE.Mesh(ballGeometry, ballMaterial);
 ball.applyMatrix4(translation(0, 0, 100));
 scene.add(ball);
@@ -276,21 +276,22 @@ let currentCurve = 1;
 
 // TODO: Camera Settings
 // Set the camera following the ball here
-let offset = new THREE.Vector3(0, 3, 7);
+let offset = new THREE.Vector3(0, 40, 30);
+// const rotationMatrix = new THREE.Matrix4().makeRotationY(degrees_to_radians(45));
+// offset.applyMatrix4(rotationMatrix);
 let cameraPosition = new THREE.Vector3().addVectors(ball.position, offset);
-let cameraMatrix = new THREE.Matrix4().makeTranslation(0, 4, cameraPosition.z);
-camera.matrix.copy(cameraMatrix);
-camera.matrix.decompose(camera.position, camera.quaternion, camera.scale);
+camera.position.set(cameraPosition.x, cameraPosition.y, cameraPosition.z);
+camera.rotation.x = degrees_to_radians(-25.5);
 
 
 // TODO: Add collectible cards with textures
 const cardGeometry = new THREE.PlaneGeometry(0.65, 1);
 
-const yellowCardTexture = textureLoader.load('/src/textures/yellow_card.jpg');
+const yellowCardTexture = textureLoader.load('src/textures/yellow_card.jpg');
 const yellowCardMaterial = new THREE.MeshPhongMaterial({ map: yellowCardTexture, side: THREE.DoubleSide });
 let yellowCards = createCards(cardGeometry, yellowCardMaterial, curveGeometry, scene);
 
-const redCardTexture = textureLoader.load('/src/textures/red_card.jpg');
+const redCardTexture = textureLoader.load('src/textures/red_card.jpg');
 const redCardMaterial = new THREE.MeshPhongMaterial({ map: redCardTexture, side: THREE.DoubleSide });
 let redCards = createCards(cardGeometry, redCardMaterial, curveGeometry, scene);
 
@@ -324,25 +325,23 @@ const curve = new THREE.Curve(); // Replace with your actual curve
 // Function to move the ball to a new position on the curve
 function moveBall(currentCurve) {
     const ballPosition = curveGeometry[currentCurve].getPoint((100 - ball.position.z) / 100);
-    ball.applyMatrix4(translation(-ball.position.x, -ball.position.y, 0));
-    ball.applyMatrix4(translation(ballPosition.x, ballPosition.y, 0));
+    ball.position.set(ballPosition.x, ballPosition.y, ballPosition.z);
 }
 
 // Handle keyboard events
 const handle_keydown = (e) => {
-    if (e.code == 'ArrowRight') {
+    if (e.code === 'ArrowRight') {
         currentCurve = (currentCurve + 1) % 3;
-        moveBall(currentCurve);
-        } else if (e.code == 'ArrowLeft') {
-            currentCurve = (currentCurve - 1) % 3;
-            if (currentCurve < 0) {
-                currentCurve = 2;
-            }
+    } else if (e.code === 'ArrowLeft') {
+        currentCurve = (currentCurve - 1) % 3;
+        if (currentCurve < 0) {
+            currentCurve = 2;
         }
-        moveBall(currentCurve);
-
-    
+    }
+    moveBall(currentCurve);
+    updateCameraPosition(); // Update the camera position after moving the ball
 };
+
 
 document.addEventListener('keydown', handle_keydown);
 
@@ -372,10 +371,8 @@ function animate() {
         if (cards[0].curveIndex == currentCurve) {
             cards[0].visible = false;
             if (cards[0].material === redCardMaterial) {
-                console.log("Red card");
                 redHits += 1;
             } else if (cards[0].material === yellowCardMaterial) {
-                console.log("Yellow card");
                 yellowHits += 1;
             }
         }
@@ -401,23 +398,26 @@ function animate() {
 animate()
 
 function updateCameraPosition() {
-    camera.position.copy(ball.position).add(offset);
-    camera.lookAt(ball.position);
+    camera.position.set(0, camera.position.y, ball.position.z + offset.z);
+    //camera.lookAt(ball.position);
 }
 
-function resetCards() {
-    for (let i = 0; i < yellowCards.length; i++) {
-        yellowCards[i].visible = false;
-    }
-    for (let i = 0; i < redCards.length; i++) {
-        redCards[i].visible = false;
-    }
-    yellowCards = createCards(cardGeometry, yellowCardMaterial, curveGeometry, scene);
-    redCards = createCards(cardGeometry, redCardMaterial, curveGeometry, scene);
-    cards = [...yellowCards, ...redCards].sort((a, b) => b.position.z - a.position.z);
 
-    yellowHits = 0;
-    redHits = 0;
+
+function resetCards() {
+    // for (let i = 0; i < yellowCards.length; i++) {
+    //     yellowCards[i].visible = false;
+    // }
+    // for (let i = 0; i < redCards.length; i++) {
+    //     redCards[i].visible = false;
+    // }
+    // yellowCards = createCards(cardGeometry, yellowCardMaterial, curveGeometry, scene);
+    // redCards = createCards(cardGeometry, redCardMaterial, curveGeometry, scene);
+    // cards = [...yellowCards, ...redCards].sort((a, b) => b.position.z - a.position.z);
+
+    // yellowHits = 0;
+    // redHits = 0;
+    window.location.reload()
     
 }
 // Rotation matrix about the x,y,z axes.
